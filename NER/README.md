@@ -44,3 +44,4 @@ id	word	tag	NER	o_id	o_word
 21	다	EF	-	-	-
 22	.	SF	-	-	-
 ```
+ 
