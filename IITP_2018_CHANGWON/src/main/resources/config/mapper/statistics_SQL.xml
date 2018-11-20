@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="statistics">
+	<resultMap type="StatisticsVO" id="StatisticsMap">
+		<result property="path" column="PATH"/>
+        <result property="colId" column="COL_ID"/>
+        <result property="cnt" column="CNT"/>
+        <result property="rate" column="RATE"/>
+        <result property="totalDocCnt" column="T_DOC_CNT"/>
+        <result property="groupName" column="GROUP_NAME"/>
+        <result property="tagName" column="TAG_NAME"/>
+        <result property="content" column="CONTENT"/>
+	</resultMap>
+	
+	<select id="getDomainDocumentStatistics" resultMap="StatisticsMap">
+		SELECT PATH, COL_ID, A.DOC_ID, CNT, (CNT / T_DOC_CNT) AS RATE, T_DOC_CNT
+		FROM (
+			SELECT PATH, COL_ID,A.DOC_ID, COUNT(DOC_ID) AS CNT, T_DOC_CNT
+			FROM (
+				SELECT PATH, COL_ID,A.DOC_ID, (SELECT COUNT(DOC_ID) AS T_DOC_CNT FROM DOCUMENT_NEW) AS T_DOC_CNT
+				FROM (
+					SELECT B.COL_ID, B.PATH, A.DOC_ID
+					FROM DOCUMENT_NEW A
+					INNER JOIN COLLECTION_NEW B
+					ON B.COL_ID = A.COL_ID
+				) A
+			) A
+			GROUP BY PATH, COL_ID, T_DOC_CNT
+		) A
+		ORDER BY CNT DESC
+	</select>
+	
+	<!-- 레이블 항목별 문서 통계 -->
+	<select id="getGroupNameDocumentStatistics" resultMap="StatisticsMap">
+		SELECT A.GROUP_NAME, A.CNT, (A.CNT / A.T_DOC_CNT) AS RATE
+		FROM (
+			SELECT A.GROUP_NAME, COUNT(A.DOC_ID) AS CNT, A.T_DOC_CNT
+			FROM (
+				SELECT  IFNULL(B.GROUP_NAME, 'NONE') as GROUP_NAME, A.DOC_ID, (SELECT COUNT(DOC_ID) AS T_DOC_CNT FROM DOCUMENT_NEW) AS T_DOC_CNT
+				FROM DOCUMENT_NEW A
+				LEFT OUTER JOIN RECORD_NEW B
+				ON A.DOC_ID = B.DOC_ID
+			) A
+			GROUP BY A.GROUP_NAME, A.T_DOC_CNT
+		) A
+		ORDER BY CNT DESC
+	</select>
+	
+	<!-- 레이블 항목별 태깅된 태그 통계 -->
+	<select id="getGroupNameByTagStatistics" resultMap="StatisticsMap" parameterType="StatisticsVO">
+		SELECT A.GROUP_NAME, A.NAME, B.LABELS AS TAG_NAME, COUNT(A.DOC_ID) AS CNT
+		FROM (
+			SELECT A.GROUP_NAME, B.DOC_ID, IFNULL(C.NAME, 'NONE') AS NAME
+			FROM DOCUMENT_NEW B
+			INNER JOIN RECORD_NEW A
+			ON A.DOC_ID = B.DOC_ID
+			AND A.GROUP_NAME = #{groupName}
+			INNER JOIN ANNOTATION_NEW C
+			ON A.RECORD_ID = C.RECORD_ID
+		) A
+		INNER JOIN ENTITY B
+		ON A.NAME = B.NAME
+		GROUP BY A.GROUP_NAME, A.NAME, B.LABELS
+		ORDER BY CNT DESC
+	</select>
+	
+	<!-- 레이블 항목별 태깅된 태그의 키워드 건수 통계 -->
+	<select id="getTagByContentStatistics" resultMap="StatisticsMap" parameterType="StatisticsVO">
+		SELECT A.GROUP_NAME, A.CONTENT, COUNT(A.DOC_ID) AS CNT
+		FROM (
+			SELECT A.GROUP_NAME, C.CONTENT, A.DOC_ID
+			FROM DOCUMENT_NEW B
+			INNER JOIN RECORD_NEW A
+			ON A.DOC_ID = B.DOC_ID
+			AND A.GROUP_NAME = #{groupName}
+			LEFT OUTER JOIN ANNOTATION_NEW C
+			ON A.RECORD_ID = C.RECORD_ID
+			AND C.NAME = #{tagName}
+		) A
+		GROUP BY A.GROUP_NAME, A.CONTENT
+		ORDER BY CNT DESC
+		LIMIT 100
+	</select>
+</mapper>

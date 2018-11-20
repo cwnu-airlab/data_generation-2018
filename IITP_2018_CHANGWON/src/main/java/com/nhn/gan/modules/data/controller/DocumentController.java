@@ -1,0 +1,91 @@
+package com.nhn.gan.modules.data.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.nhn.gan.common.utils.Pagination;
+import com.nhn.gan.domain.DocumentVo;
+import com.nhn.gan.modules.data.service.CollectionService;
+import com.nhn.gan.modules.data.service.DocumentService;
+
+@Controller
+public class DocumentController {
+	Logger log = LoggerFactory.getLogger(this.getClass());
+		   
+	@Autowired
+	public DocumentService documentService;
+	
+	@Autowired
+	public CollectionService collectionService;
+	
+    @RequestMapping(value="/data/document/list.do")
+    public ModelAndView getdocumentList(HttpServletRequest request, DocumentVo vo, String docIds) throws Exception {
+        ModelAndView mv = new ModelAndView();
+
+        String domainJstreeHtml = collectionService.domainJstreeHtml(vo.getColId());
+        List<DocumentVo> list = new ArrayList<>();
+        int count = 0;
+        
+        if (!StringUtils.isEmpty(docIds)) {
+	        vo.setDocIds(docIds.split(","));
+	        list = documentService.getDocList(vo);
+	        count = documentService.getDocListCount(vo);
+        }
+        
+        
+        
+        mv.addObject("domainJstreeHtml", domainJstreeHtml);
+        mv.addObject("list", list);
+        mv.addObject("count",count);
+        mv.addObject("pagination", new Pagination(request, count));
+        mv.addObject("doc", vo);
+        mv.addObject("docIds", docIds);
+        mv.setViewName("data/document/list");
+        
+        return mv;
+    }
+    
+    @ResponseBody
+    @RequestMapping(value="/data/document/insert.do", produces = "text/json; charset=UTF-8")
+    public String insertDocument(HttpServletResponse response, DocumentVo vo) throws Exception {
+    	JSONObject result = documentService.insertDocument(vo);
+		return result.toJSONString();
+    }
+
+    
+    @RequestMapping(value="/data/document/delete.do", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ModelAndView deleteDocument(Integer[] docId) throws Exception {
+    	 ModelAndView mv = new ModelAndView("jsonView");	
+    	 documentService.deleteDocument(docId);
+         return mv;
+    }
+
+    @RequestMapping(value="/data/document/recordDelete.do", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ModelAndView deleteRecord(Integer[] recordId) throws Exception {
+    	 ModelAndView mv = new ModelAndView("jsonView");	
+    	 documentService.deleteRecord(recordId);
+         return mv;
+    }
+    
+    @RequestMapping(value="/data/document/editConf.do", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ModelAndView editConf(DocumentVo vo) throws Exception {
+    	ModelAndView mv = new ModelAndView("jsonView");
+    	documentService.updateRecordConf(vo);
+        return mv;
+    }
+    
+}

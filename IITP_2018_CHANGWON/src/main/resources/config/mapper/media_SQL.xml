@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="media">
+	<resultMap type="MediaVo" id="mediaMap">
+		<result column="MEDIA_ID" property="mediaId"/>
+		<result column="CATEGORY" property="category"/>
+		<result column="FILE_NAME" property="fileName"/>
+		<result column="THUMBNAIL" property="thumbail"/>
+		<result column="LOCAL_FILE" property="localFile"/>
+		<result column="REGISTED_USER" property="registedUser"/>
+		<result column="STATUS" property="status"/>
+		<result column="REG_DT" property="regDt"/>
+		<result column="UPD_DT" property="updDt"/>
+	</resultMap>
+	
+	<resultMap type="MediaActivityVo" id="mediaActivityMap">
+		<result column="MEDIA_ID" property="mediaId"/>
+		<result column="TITLE" property="title"/>
+		<result column="WHO" property="who"/>
+		<result column="WHO_DESC" property="whoDesc"/>
+		<result column="WHAT_BEHAVIOR" property="whatBehavior"/>
+		<result column="WHAT_BEHAVIOR_DESC" property="whatBehaviorDesc"/>
+		<result column="WHAT_BEHAVIOR" property="whatObject"/>
+		<result column="WHAT_OBJECT_DESC" property="whatObjectDesc"/>
+		<result column="WHERE" property="where"/>
+		<result column="WHERE_DESC" property="whereDesc"/>
+		<result column="WHEN" property="when"/>
+		<result column="WHEN_DESC" property="whenDesc"/>
+		<result column="WHY" property="why"/>
+		<result column="WHY_DESC" property="whyDesc"/>
+		<result column="HOW" property="how"/>
+		<result column="HOW_DESC" property="howDesc"/>
+		<result column="REG_DT" property="regDt"/>
+		<result column="UPT_DT" property="uptDt"/>
+	</resultMap>
+	
+	<resultMap type="MediaTagDescVo" id="mediaTagDescMap">
+		<result column="TAG_ID" property="tagId"/>
+		<result column="MEDIA_ID" property="mediaId"/>
+		<result column="TAG_NAME" property="tagName"/>
+		<result column="DESCRIPTION" property="description"/>
+	</resultMap>
+	
+	<resultMap type="MediaCategoryVo" id="mediaCategoryMap">
+		<result column="CAT_ID" property="catId"/>
+		<result column="CAT_NAME" property="catName"/>
+	</resultMap>
+	
+	<select id="getMediaId" resultType="int">
+		SELECT MAX(MEDIA_ID) + 1
+		FROM MEDIA
+	</select>
+	
+	<select id="getNoneCategory" resultType="string">
+		SELECT CAT_NAME
+		FROM MEDIA_CATEGORY
+		WHERE CAT_ID = 1
+	</select>
+	
+	<insert id="insertMedia" parameterType="MediaVo">
+		INSERT INTO MEDIA (CATEGORY, FILE_NAME, THUMBNAIL, LOCAL_FILE, REGISTED_USER, REG_DT) 
+		VALUES (#{category}, #{fileName}, #{thumbnail}, #{localFile}, #{registedUser}, #{regDt})
+	</insert>
+	
+	<insert id="insertMediaTagDesc" parameterType="MediaTagDescVo">
+		INSERT INTO MEDIA_TAG_DESC (TAG_NAME, DESCRIPTION, MEDIA_ID) VALUES (${tagName}, ${description}, #{mediaId})
+	</insert>
+	
+	<insert id="insertMediaCategory" parameterType="MediaCategoryVo">
+		INSERT INTO MEIDA_CATEGORY (CAT_NAME) VALUES (#{catName})
+	</insert>
+	
+	<insert id="insertMeidaActivity" parameterType="MediaActivityVo">
+		INSERT INTO MEDIA_ACTIVITY (MEDIA_ID, TITLE, WHO, WHAT_BEHAVIOR, WHAT_OBJECT, `WHERE`, `WHEN`, WHY, HOW, REG_DT) 
+		VALUES (#{mediaId}, #{title}, ${who}, #{whatBehavior}, #{whatObject}, #{where}, #{when}, #{why}, #{how}, #{regDt})
+	</insert>
+	
+	<update id="updateMeidaActivity" parameterType="MediaActivityVo">
+		UPDATE MEDIA_ACTIVITY
+		<set>
+			<if test="title != null &amp;&amp; title.length() &gt; 1">
+				TITLE=${title},
+			</if>
+			<if test="who &gt; 0">
+				WHO=${who},
+			</if>
+			<if test="whatBehavior &gt; 0">
+				WHAT_BEHAVIOR=${whatBehavior},
+			</if>
+			<if test="whatObject &gt; 0">
+				WHAT_OBJECT=${whatObject},
+			</if>
+			<if test="where &gt; 0">
+				`WHERE`=${where},
+			</if>
+			<if test="when &gt; 0">
+				`WHEN`=${when},
+			</if>
+			<if test="why &gt; 0">
+				WHY=${why},
+			</if>
+			<if test="how &gt; 0">
+				HOW=${how},
+			</if>
+			UPT_DT = CURRENT_TIMESTAMP
+		</set> 
+		WHERE MEDIA_ID = #{mediaId}
+	</update>
+	
+	<select id="selectMediaActivity" parameterType="int" resultMap="mediaActivityMap">
+		SELECT 
+		MEDIA_ID, TITLE, WHO, WHAT_BEHAVIOR, WHAT_OBJECT, `WHERE`, `WHEN`, WHY, HOW
+		FROM MEDIA_ACTIVITY
+		WHERE MEDIA_ID = #{mediaId}
+	</select>
+	
+	<select id="selectMediaTagDesc" parameterType="MediaTagDescVo" resultMap="mediaTagDescMap">
+		SELECT *
+		FROM MEDIA_TAG_DESC
+		WHERE MEDIA_ID = #{mediaId} AND TAG_ID = #{tagId}
+	</select>
+	
+	
+	<select id="selectCategoryList" resultMap="mediaCategoryMap">
+		SELECT CAT_ID, CAT_NAME
+		FROM MEDIA_CATEGORY
+	</select>
+	
+	<select id="selectMediaInfoCount" parameterType="MediaVO" resultType="int">
+		SELECT COUNT(*) AS CNT
+		FROM MEDIA
+		<!-- WHERE --> 
+	</select>
+	
+	<select id="selectMediaInfoList" parameterType="MediaVO" resultMap="mediaMap">
+		SELECT A.MEDIA_ID, A.CATEGORY, (SELECT B.CAT_NAME FROM MEDIA_CATEGORY B WHERE B.CAT_ID = A.CATEGORY) AS CATEGORY_NAME, A.FILE_NAME, A.REGISTED_USER, IFNULL(A.UPD_DT, A.REG_DT) AS A.REG_DT
+		FROM MEDIA A
+		INNER JOIN ( 
+			SELECT A.RNUM, A.MEDIA_ID
+			FROM (
+				SELECT A.RNUM, A.MEDIA_ID
+				FROM (
+					SELECT (@ROWNUM := @ROWNUM+1) AS RNUM, A.MEDIA_ID
+					FROM (
+						SELECT MEDIA_ID
+						FROM MEDIA
+						<!-- WHERE --> 
+					), 
+					(SELECT @ROWNUM := 0) B
+				)
+				<![CDATA[
+					WHERE RNUM > 0
+				]]>
+			) A
+			<![CDATA[
+				WHERE RNUM <= 10
+			]]>
+		) B
+		ON A.MEDIA_ID = B.MEDIA_ID
+		ORDER REG_DT DESC
+	</select>	
+	
+	
+	
+</mapper>
