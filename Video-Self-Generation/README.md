@@ -11,6 +11,6 @@
 - DCGANs (Deep Convolution GANs) 기반 영상 데이터 생성 모델 개발
 
 - UCF-101 벤치마크 데이터에 대한 자가증식 데이터셋 업로드 완료 (2018.11.12.)
-  - https://github.com/cwnu-airlab/data_generation-2018/tree/master/git/ETRI-GANs
+  - https://github.com/cwnu-airlab/data_generation-2018/tree/master/Video-Self-Generation/ETRI-GANs/generatedData/GD_UCF
   
-  ![dataset_thubnails](./git/ETRI-GANs/images/dataset_thubnails.PNG)
+  ![dataset_thubnails](https://user-images.githubusercontent.com/37280145/49055861-936aa700-f23c-11e8-9305-79b6a66a826b.PNG)
