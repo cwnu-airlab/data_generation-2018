@@ -37,8 +37,8 @@ public class RootContext {
 	@Bean
 	public PropertySourcesPlaceholderConfigurer  getPropertyPlaceholderConfigurer() throws IOException {
 		PropertySourcesPlaceholderConfigurer  ppc = new PropertySourcesPlaceholderConfigurer ();
-		Resource[] resources = pathMatching.getResources("classpath:/application_dev.properties");
-//		Resource[] resources = pathMatching.getResources("classpath:/application.properties");
+//		Resource[] resources = pathMatching.getResources("classpath:/application_dev.properties");
+		Resource[] resources = pathMatching.getResources("classpath:/application.properties");
 		ppc.setLocations(resources);
 //		ppc.setIgnoreUnresolvablePlaceholders(true);
 		return ppc;
@@ -48,8 +48,8 @@ public class RootContext {
 	@Bean(name="app")
 	public PropertiesFactoryBean getGlobalSettings() throws IOException {
 		PropertiesFactoryBean bean = new PropertiesFactoryBean();
-		bean.setLocations(pathMatching.getResources("classpath:/global.settings_dev.properties"));
-//		bean.setLocations(pathMatching.getResources("classpath:/global.settings.properties"));
+//		bean.setLocations(pathMatching.getResources("classpath:/global.settings_dev.properties"));
+		bean.setLocations(pathMatching.getResources("classpath:/global.settings.properties"));
 		return bean;
 	}
 }

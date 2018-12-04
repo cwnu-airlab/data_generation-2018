@@ -50,9 +50,9 @@
 	<definition name="statistics/*/*" extends="layout_main">
 		<put-attribute name="content" value="/WEB-INF/views/statistics/{1}/{2}.jsp" />
 	</definition>
-	
+	<definition name="media/mediaShotEdit" template="/WEB-INF/views/media/mediaShotEdit.jsp" />
 	<definition name="media/*" extends="layout_main">
 		<put-attribute name="content" value="/WEB-INF/views/media/{1}.jsp" />
 	</definition>
-				
+	
 </tiles-definitions>

@@ -2,7 +2,7 @@
 var webFontURLs;
 var dispatcher;
 var bratWin = [];
-var bratWinLength;
+var bratWinLength = 0;
 var keywordLoc;
 var keywordnum;
 
@@ -194,6 +194,9 @@ function fn_keywordSort(field){
 		url += '&orderOpt='+encodeURI(sortOption);
 		$.ajax({
 			url: url,
+			beforeSend : function(){
+				$("#keyword-loading").show();
+			},
 			success: function (data) {
 //				data.searchTerm = searchTerm
 				var tagInfo = data.selectEntityDesc;
@@ -235,6 +238,7 @@ function fn_keywordSort(field){
 				
 				setTimeout(function(){
 			    	$(".tbl_body_wrap").mCustomScrollbar('update');
+			    	$("#keyword-loading").hide();
 			    }, 1000);
 			}
 	    });
@@ -265,6 +269,9 @@ function fn_getKeyword() {
 		
 		$.ajax({
 			url: url,
+			beforeSend : function(){
+				$("#keyword-loading").show();
+			},
 			success: function (data) {
 //				data.searchTerm = searchTerm
 				var tagInfo = data.selectEntityDesc;
@@ -293,6 +300,7 @@ function fn_getKeyword() {
 			complete : function (){
 				setTimeout(function(){
 			    	$(".tbl_body_wrap").mCustomScrollbar('update');
+			    	$("#keyword-loading").hide();
 			    }, 1000);
 			}
 	    });
@@ -461,9 +469,7 @@ function fn_bratEdit() {
 function fn_bratView(type, docId, recordId){
 	$("#brat-loading").show();
 	var groupName = $("#groupName").val();
-	console.log(groupName);
 	var entity = getEntity(groupName);
-	console.log(entity);
 	$.ajax({
 		url: contextPath+"/labeling/bratView.do",
 		type: "POST",
@@ -475,13 +481,14 @@ function fn_bratView(type, docId, recordId){
 			var collData = {};	
 			collData.entity_types = data.collData.entities;
 			collData.relation_types = data.collData.relations;
-			dispatcher.post('collectionLoaded', [collData]);
 			
 			var docData = {};
 			docData.text = data.docData.text;
 			
 			docData.entities = data.docData.entities;
 			docData.relations = data.docData.relations;
+			
+			dispatcher.post('collectionLoaded', [collData]);
 			dispatcher.post('requestRenderData', [docData]); 
 			
 			setTimeout("$('#brat-loading').hide()" , 500);
@@ -491,7 +498,6 @@ function fn_bratView(type, docId, recordId){
 			$("#docGroupName").val(groupName);
 			
 			
-			console.log(entity);
 			$('#entityTagInfo').val(entity.join(','));
 			$('#labelingType').val(type);
 			

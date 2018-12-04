@@ -1,168 +1,4 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<script>
-	var fileList = [];
-	$(document).ready(function(){
-		$(document).on("dragenter", "#fileUploadInfo", function(e){
-			e.stopPropagation();
-			e.preventDefault();
-		});
-		$(document).on("dragover", "#fileUploadInfo", function(e){
-			e.stopPropagation();
-			e.preventDefault();
-		});
-		$(document).on("drop", "#fileUploadInfo", function(e){
-			var files = e.originalEvent.dataTransfer.files;
-			if ($('tr[id^=tr_]').length < 1) {
-				for (var i = 0; i < files.length; i++) {
-					if (i == 0) {
-						if ((/png$|jpe?g$|gif$|mp4$|mp3$/i).test(files[i].name)) {
-							if ((/mp4$/i).test(files[i].name)) {
-								doVieoBlobUrl(files[i], 'VIDEO');
-							} else if ((/mp3$/i).test(files[i].name)) {
-								doVieoBlobUrl(files[i], 'AUDIO');
-							} else {
-								doVieoBlobUrl(files[i], 'IMAGE');
-							}
-						}
-					}
-				}
-			} else {
-				alert('동영상, 소리, 이미지는 최대 1개만 올릴 수 있습니다.');
-			}
-		});          
-		$(document).on('dragenter', function(e){
-			e.stopPropagation();
-			e.preventDefault();
-		});
-		$(document).on('dragover', function(e){
-			e.stopPropagation();
-			e.preventDefault();
-		});
-		$(document).on('drop', function(e){
-			e.stopPropagation();
-			e.preventDefault();
-		});
-		
-		$('#localFile').change(function(){
-			var files = this.files;
-			if ($('tr[id^=tr_]').length < 3) {
-				for (var i = 0; i < files.length; i++) {
-					if ((/png$|jpe?g$|gif$|mp4$|mp3$/i).test(files[i].name)) {
-						if ((/mp4$/i).test(files[i].name)) {
-							doVieoBlobUrl(files[i], 'VIDEO');
-						} else if ((/mp3$/i).test(files[i].name)) {
-							doVieoBlobUrl(files[i], 'AUDIO');
-						} else {
-							doVieoBlobUrl(files[i], 'IMAGE');
-						}
-					}
-				}
-			} else {
-				alert('동영상, 소리, 이미지는 최대 3개만 올릴 수 있습니다.');
-			}
-		});
-		
-		$('#startUpload').click(function(){
-			var fd = new FormData();
-			for(var i = 0 ; i < fileList.length ; i++){
-				fd.append('file', fileList[i]);
-			}
-
-			$.ajax({
-				url : '${pageContext.request.contextPath}/media/upload.do',
-				processData: false,
-                contentType: false,
-				data : fd,
-				type : 'POST',
-				success : function(data) {
-					console.log(data);	
-				}
-			})
-		})
-		
-		$('#addFile').click(function(){
-			$('#localFile').click();
-		});
-	});
-	
-	function doVieoBlobUrl(file, type) {
-		var fileUrl = URL.createObjectURL(file);
-		if (fileUrl.lastIndexOf('/') != -1){
-			trId = fileUrl.substring(fileUrl.lastIndexOf('/')+1);
-		} else {
-			trId = fileUrl;
-		}
-		
-		var fileLength =''
-		var size = (file.size  / (1000 * 1000)).toFixed(2);
-		if(size >= 1024) {
-			fileLength = (size / 1000).toFixed(2)  + "GB"; 		
-		} else {
-			fileLength = size + "MB"
-		}
-		
-		fileList.push(file);
-		var html = '';
-		html += '<tr id="tr_'+trId+'" class="ng-scope">';
-		html +=  '<td scope="col">';
-		html +=  '<div class="preview ng-scope">';
-		if (type == 'VIDEO') {
-			html += '<video style="width: 300px;" src="'+fileUrl+'" controls=""></video>';
-		} else if (type =='AUDIO') {
-			html += '<audio style="width: 300px;" controls>';
-			html += '<source src="'+fileUrl+'" type="audio/mpeg">';
-			html += '</audio>';
-		} else {
-			html += '<img src="'+fileUrl+'" width="100%" height="100%"/>';
-		}
-		html += '</div>';
-		html += '</td>';
-		html += '<td scope="col">';
-		html += '<p class="size ng-binding">'+file.name+' ('+ fileLength +')</p>';
-		html += '</td>';
-		html += '<td scope="col">';
-		html += '<a class="large btn b_black float_r" href="javascript:deleteFile(\''+file.name+'\', \'tr_'+trId+'\')">Delete File</a>'
-		html += '</td>';
-		html += '</tr>';
-		$('#uploadFileData').append(html);
-	}
-	
-	function deleteFile(index, trId) {
-		var subFile = []
-		for(var i = 0 ; i < fileList.length ; i++){
-			var f = fileList[i]
-			if(f.name == index){
-				continue;
-			}
-			subFile.push(f)
-		}
-		fileList = subFile
-		$('#' + trId).remove();
-	}
-	
-</script>
-<style>
-	.media_type02 {
-		border-bottom: 1px solid #ddd;
-		width: 100%;
-		table-layout: fixed;
-	}
-	.media_type02 td {
-		border-bottom: 1px solid #ddd;
-		padding: 5px 10px;
-		text-align: center;
-		font-size: 25px;
-		line-height: 1.5em;
-		word-break: break-all;
-	}
-	.cont_white {
-		position: relative;
-		clear: both;
-		background: #ffffff;
-		border: 1px solid #ddd;
-		border-radius: 6px;
-	}
-</style>
 <!-- page title start -->
 <div class="tit_page clear2">
 	<h2>동영상 데이터 등록</h2>
@@ -204,7 +40,7 @@
 		<div class="mt_30">
 			<div class="cont_tit2">Media Upload List
 			</div>
-			<div class="cont_white clear2" style="height:395px;">	
+			<div class="cont_white clear2" style="min-height:395px;">	
 				<table class="media_type02" id="uploadFileData">
 					<colgroup>
 						<col width="320px">
@@ -219,4 +55,37 @@
 		<!--// 개체명 레이블드 데이터 end -->
 	</div>
 	<!--// full area end -->
+	
+	<!-- 모달 : Progress -->
+	<div class="modal" id="modal_progress">
+		<div class="modal_in" style="width:400px;">
+			<div class="modal_cont">
+				<img src="${pageContext.request.contextPath}/resources/images/common/icon_upload_loading.gif" class="float_l" style="width:25px;" alt="업로드 로딩 이미지"/>
+				<div id="uploadMessage" class="ml_10 float_l" style="font-size:13px;font-weight:bold;"></div>
+			</div>
+		</div>
+	</div>
 </div>
+<script type="text/javascript" src="${pageContext.request.contextPath}/resources/js/media/media.regist.js"></script>
+<style>
+	.media_type02 {
+		border-bottom: 1px solid #ddd;
+		width: 100%;
+		table-layout: fixed;
+	}
+	.media_type02 td {
+		border-bottom: 1px solid #ddd;
+		padding: 5px 10px;
+		text-align: center;
+		font-size: 25px;
+		line-height: 1.5em;
+		word-break: break-all;
+	}
+	.cont_white {
+		position: relative;
+		clear: both;
+		background: #ffffff;
+		border: 1px solid #ddd;
+		border-radius: 6px;
+	}
+</style>

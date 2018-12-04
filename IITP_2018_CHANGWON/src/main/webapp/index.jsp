@@ -3,7 +3,7 @@
 <%
 if(session.getAttribute("userLoginInfo") != null){
 %>
-location.href="${pageContext.request.contextPath}/statistics/list.do";
+location.href="${pageContext.request.contextPath}/statistics/text/list.do";
 <%
 } else {
 %>

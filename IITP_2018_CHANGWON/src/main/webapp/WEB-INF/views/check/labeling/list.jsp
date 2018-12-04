@@ -94,6 +94,9 @@
 									<col >
 								</colgroup>
 								<tbody id="docList">
+									<tr>
+										<td colspan="4">보고싶은 문서가 있는 도메인을 선택하세요.</td>
+									</tr>
 								</tbody>
 							</table>
 						</div>
@@ -165,7 +168,7 @@
 <script id="tmpl_doc" type="text/x-jsrender">
 {{if #data}}
 	{{for docList}}
-		<tr onclick="javascript:fn_bratView('{{>docId}}', '{{>groupName}}')">
+		<tr style="cursor:pointer;" onclick="javascript:fn_bratView('{{>docId}}', '{{>groupName}}')">
 			<td class="left">{{>subject}}</td>
 			{{if groupName == 'namedentity'}}
 				<td>개채명</td>

@@ -16,9 +16,9 @@
 		<typeAlias alias="CollectionVo" type="com.nhn.gan.domain.CollectionVo"/>
 		<typeAlias alias="UserVo" type="com.nhn.gan.domain.UserVo"/>
 		<typeAlias alias="StatisticsVO" type="com.nhn.gan.domain.StatisticsVO"/>
-		<typeAlias alias="MediaActivityVo" type="com.nhn.gan.domain.MediaActivityVo"/>
 		<typeAlias alias="MediaCategoryVo" type="com.nhn.gan.domain.MediaCategoryVo"/>
 		<typeAlias alias="MediaVo" type="com.nhn.gan.domain.MediaVo"/>
+		<typeAlias alias="MediaShotVo" type="com.nhn.gan.domain.MediaShotVo"/>
 		<typeAlias alias="MediaTagDescVo" type="com.nhn.gan.domain.MediaTagDescVo"/>
 	</typeAliases>
 </configuration>

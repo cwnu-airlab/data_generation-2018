@@ -1,4 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <style>
 	.cont_white {
 			position: relative;
@@ -48,25 +51,37 @@
 	$(document).ready(function () {
 		var videoPlayer = document.getElementById('samplePlayer');
 	
+		var d = new Date(null)
+		d.setSeconds(0);
+		var timeString = d.toISOString().substr(11, 8);
+		videoPlayer.currentTime = 0
+		$('#startTime').val(timeString);
+		$('#startTimeHid').val(0);
+		
+		d = new Date(null)
+		d.setSeconds(${mediaInfo.duration});
+		timeString = d.toISOString().substr(11, 8);
+		$('#endTime').val(timeString);
+		$('#endTimeHid').val(${mediaInfo.duration});
+		
 		$( "#slider-range" ).slider({
 			range: true,
 			min: 0,
-			max: 377.951200,
-			values: [ 0, 377.951200 ],
+			max: ${mediaInfo.duration},
+			values: [ 0, ${mediaInfo.duration}],
 			slide : function (event ,ui ){
 				var values =  ui.values;
 				var d = new Date(null)
 				d.setSeconds(values[0]);
 				var timeString = d.toISOString().substr(11, 8);
-				console.log("START TIME : " + timeString)
 				videoPlayer.currentTime = values[0]
 				$('#startTime').val(timeString);
-				
+				$('#startTimeHid').val(values[0]);
 				d = new Date(null)
 				d.setSeconds(values[1]);
 				timeString = d.toISOString().substr(11, 8);
-				console.log("END TIME : " + timeString)
 				$('#endTime').val(timeString);
+				$('#endTimeHid').val(values[1]);
 			}, 
 			start : function (event, ui) {
 				var values =  ui.values;
@@ -74,11 +89,12 @@
 				d.setSeconds(values[0]);
 				var timeString = d.toISOString().substr(11, 8);
 				$('#startTime').val(timeString);
-				
+				$('#startTimeHid').val(values[0]);
 				d = new Date(null)
 				d.setSeconds(values[1]);
 				timeString = d.toISOString().substr(11, 8);
 				$('#endTime').val(timeString);
+				$('#endTimeHid').val(values[1]);
 			}
 		});
 		
@@ -94,16 +110,18 @@
 				var timeString = d.toISOString().substr(11, 8);
 				
 				$('#startTime').val(timeString);
+				$('#startTimeHid').val(values[1]);
 			} else {	
 				var d = new Date(null)
 				d.setSeconds(videoPlayer.currentTime);
 				var timeString = d.toISOString().substr(11, 8);
 				$('#startTime').val(timeString);
-				
+				$('#startTimeHid').val(videoPlayer.currentTime);
 				d = new Date(null)
 				d.setSeconds(values[1]);
 				timeString = d.toISOString().substr(11, 8);
 				$('#endTime').val(timeString);
+				$('#endTimeHid').val(values[1]);
 				$( "#slider-range" ).slider('values', 0,videoPlayer.currentTime)
 			}
 			
@@ -117,6 +135,20 @@
 				videoPlayer.play();
 				videoPlayer.firstChild.nodeValue = 'Pause';
 			}
+		});
+		
+		$('#makeShotBtn').click(function (){
+			$('#startTimeCode').val($("#startTime").val());
+			$('#endTimeCode').val($("#endTime").val());
+			
+			$.ajax({
+				url : contextPath + "/media/makeShot.do",
+				type : 'post',
+				data : $(document.makeShotFrom).serialize(),
+				success : function (data){
+					$('#shotEditForm').html(data);
+				}
+			});
 		});
 	});
 </script>
@@ -134,14 +166,23 @@
 <!--// page title end -->
 <div class="cont">
 	<!-- full area start -->
+	<form name="makeShotFrom">
+		<input type="hidden" name="mediaId" id="mediaId" value="${mediaInfo.mediaId}" />
+		<input type="hidden" name="localFile" id="localFile" value="${mediaInfo.localFile}" />
+<%-- 		<input type="hidden" name="localFile" id="" value="${mediaInfo.localFile}" /> --%>
+		<input type="hidden" name="startTime" id="startTimeHid" value="" />
+		<input type="hidden" name="endTime" id="endTimeHid" value="" />
+		<input type="hidden" name="startTimeCode" id="startTimeCode" value="" />
+		<input type="hidden" name="endTimeCode" id="endTimeCode" value="" />
+	</form>
 	<div class="full_area">
 		<div>
-			<div class="float_l mb_20">
+			<div class="mb_20">
 				<div class="cont_tit2">동영상 정보
 				</div>
 				<div class="cont_white clear2" style="height:300px;">
 					<div class="cont_tit2 ml_10 mt_10">Sample Info</div>
-					<video src="${pageContext.request.contextPath}/resources/sample/sample1.mp4" id="samplePlayer" width="30%" height="250px" controls="controls" class="float_l ml_10 mr_10"></video>
+					<video src="${pageContext.request.contextPath}${mediaInfo.localFile}" poster="${pageContext.request.contextPath}${mediaInfo.thumbNail}" id="samplePlayer" width="30%" height="250px" controls="controls" class="float_l ml_10 mr_10"></video>
 					<div class="float_l ml_10" style="width:65%">
 						<div id="slider-range"></div>
 						<div class="mt_20">
@@ -155,271 +196,269 @@
 							</div>
 						</div>
 						<div style="margin-top:150px;">
-							<button id="endTimeBtn" style="font-size:30px;" class="btn_tit_box float_r">MAKE SHOT</button>
+							<button id="makeShotBtn" style="font-size:30px;" class="btn_tit_box float_r">MAKE SHOT</button>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
+		
 		<div>
 			<div class="cont_tit2">샷 편집 정보</div>
-			<div class="cont_white clear2" style="height:465px;overflow-y:auto;">
-				<div style="height: 475px;border-bottom: 1px solid #afafaf;">
-					<script>
-						$(document).ready(function (){
-							var videoPlayer1 = document.getElementById('sampleShot1');
-							$( "#slider-range1" ).slider({
-								range: true,
-								min: 0,
-								max: 377.951200,
-								values: [ 10, 150],
-								start : function(evt, ui){
-									videoPlayer1.currentTime = ui.values[0]
-								}
-							});
-							
-							
-							videoPlayer1.ontimeupdate = function(){
-								var values =  $( "#slider-range1" ).slider('values');
-								if(videoPlayer1.currentTime >= values[1]){
-									videoPlayer1.pause();
-									videoPlayer1.currentTime = values[1];
-									//
-								} else {	
-									$( "#slider-range1" ).slider('values', 0,videoPlayer1.currentTime)
-								}
-							}
-							$("#sampleShot1Btn").click(function(){
-								if($(this).html() == 'Pause'){
-									$(this).html('Play');
-									videoPlayer1.pause();
-								} else {
-									var values =  $( "#slider-range1" ).slider('values');
-									if(videoPlayer1.currentTime == values[1] || videoPlayer1.currentTime == 0){
-										videoPlayer1.currentTime = 10;
-										$( "#slider-range1" ).slider('values', [10, 150])
-									}
-									videoPlayer1.play();
-									$(this).html('Pause');
-								}
+			<div id="shotEditForm" class="cont_white clear2" style="height:465px;overflow-y:auto;">
+				<c:forEach items="${mediaInfo.shotInfo}" var="item" varStatus="itemIndex">
+					<div id="shotEditDiv_${item.shotId}" style="height: 475px;border-bottom: 1px solid #afafaf;">
+						<script>
+							$(document).ready(function (){
+								var videoPlayer1 = document.getElementById('sampleShot_${item.shotId}');
 								
+								
+								$( "#slider-range_${item.shotId}" ).slider({
+									range: true,
+									min: 0,
+									max: ${mediaInfo.duration},
+									values: [${item.startTime}, ${item.endTime}],
+									start : function(evt, ui){
+										videoPlayer1.currentTime = ui.values[0]
+									}
+								});
+								
+								
+								videoPlayer1.ontimeupdate = function(){
+									var values =  $( "#slider-range_${item.shotId}" ).slider('values');
+									if(videoPlayer1.currentTime >= values[1]){
+										videoPlayer1.pause();
+										videoPlayer1.currentTime = values[1];
+										//
+									} else {	
+										$( "#slider-range_${item.shotId}" ).slider('values', 0,videoPlayer1.currentTime)
+									}
+								}
+								$("#sampleShot_${item.shotId}Btn").click(function(){
+									if($(this).html() == 'Pause'){
+										$(this).html('Play');
+										videoPlayer1.pause();
+									} else {
+										var values =  $( "#slider-range_${item.shotId}" ).slider('values');
+										if(videoPlayer1.currentTime == values[1] || videoPlayer1.currentTime == 0){
+											videoPlayer1.currentTime = ${item.startTime};
+											$( "#slider-range_${item.shotId}" ).slider('values', [${item.startTime}, ${item.endTime}])
+										}
+										videoPlayer1.play();
+										$(this).html('Pause');
+									}
+									
+								});
+								
+								$('input[type=text][id$=_${item.shotId}]').focusout(function(){
+									var id = $(this).attr('id');
+									var mediaId =  $('#mediaId_${item.shotId}').val();
+									var shotId = $('#shotId_${item.shotId}').val()
+									if(id.indexOf('evt') != -1) {
+										var editField = '';
+										var value= "";
+										var tagId = 0;
+										var tagName = '' 
+										if(id.indexOf('evt_title') == 0){
+											editField = 'TITLE';
+											value = $(this).val();
+										} else if(id.indexOf('evt_who') == 0){
+											editField = 'WHO';
+											tagId = $('#evt_who_tagId_'+ shotId).val();
+											tagName = $('#evt_who_tag_'+ shotId).val();
+											value = $('#evt_who_'+ shotId).val();
+										} else if(id.indexOf('evt_whatBehavior') == 0){
+											editField = 'WHAT_BEHAVIOR';
+											tagId = $('#evt_whatBehavior_tagId_'+ shotId).val();
+											tagName = $('#evt_whatBehavior_tag_'+ shotId).val();
+											value = $('#evt_whatBehavior_'+ shotId).val();
+										} else if(id.indexOf('evt_whatObject') == 0){
+											editField = 'WHAT_OBJECT';
+											tagId = $('#evt_whatObject_tagId_'+ shotId).val();
+											tagName = $('#evt_whatObject_tag_'+ shotId).val();
+											value = $('#evt_whatObject_'+ shotId).val();
+										} else if(id.indexOf('evt_where') == 0){
+											editField = 'WHERE';
+											tagId = $('#evt_where_tagId_'+ shotId).val();
+											tagName = $('#evt_where_tag_'+ shotId).val();
+											value = $('#evt_where_'+ shotId).val();
+										} else if(id.indexOf('evt_when') == 0){
+											editField = 'WHEN';
+											tagId = $('#evt_when_tagId_'+ shotId).val();
+											tagName = $('#evt_when_tag_'+ shotId).val();
+											value = $('#evt_when_'+ shotId).val();
+										} else if(id.indexOf('evt_why') == 0){
+											editField = 'WHY';
+											tagId  = $('#evt_why_tagId_'+ shotId).val();
+											tagName = $('#evt_why_tag_'+ shotId).val();
+											value = $('#evt_why_'+ shotId).val();
+										} else if(id.indexOf('evt_how') == 0){
+											editField = 'HOW';
+											tagId = $('#evt_how_tagId_'+ shotId).val();
+											tagName = $('#evt_how_tag_'+ shotId).val();
+											value = $('#evt_how_'+ shotId).val();
+										}
+										
+										if(editField != 'TITLE'){
+											message = '샷의 '+editField+" 항목에 "
+											
+											if($.trim(tagName) == ''){
+												return;
+											}
+											
+											if($.trim(value) == ''){
+												return													
+											}
+											
+										} else {
+											if(value == ''){
+												return;
+											}
+										}
+										
+										console.log(mediaId);
+										console.log(shotId);
+										$.ajax({
+											url : contextPath + '/media/editActivity.do',
+											type : 'post',
+											data : {"mediaId" : mediaId, "shotId" : shotId, "editField" : editField, "tagId" : tagId, "tagName" : tagName, "value" : value},
+											success : function(data) {
+												console.log(data);
+											}
+										});
+									}
+								});
+								
+								$('#deleteShot_${item.shotId}').click(function(){
+									$.ajax({
+										url : contextPath + "/media/deleteShot.do",
+										data : {mediaId : $('#mediaId_${item.shotId}').val(), shotId : $('#shotId_${item.shotId}').val()},
+										type : 'post',
+										success : function(data){
+											if(data.deleteRes > 0){
+												alert('선택한 샷 삭제를 완료하였습니다.');
+												$('#shotEditDiv_${item.shotId}').remove();
+											}
+										}
+									});
+								});
 							});
-						});
-					</script>
-					<div class="cont_tit2 ml_10 mt_10">Shot1 (XX:XX:XX ~ XX:XX:XX)</div>
-					<div class="mt_10">
-						<div class="float_l" style="width:30%">
-							<video src="${pageContext.request.contextPath}/resources/sample/sample1.mp4" id="sampleShot1" width="90%" height="250px" class="float_l ml_10 mr_10"></video>
-							<div>
-								<button id="sampleShot1Btn" class="float_l mt_10 ml_10 btn_tit_box">Play</button>
-								<div id="slider-range1" class="float_l mt_10 ml_10" style="width:80%;"></div>
+						</script>
+						<div class="cont_tit2 ml_10 mt_10">Shot1 (${item.startTimeCode} ~ ${item.endTimeCode})</div>
+						<div class="mt_10">
+							<input type="hidden" id="mediaId_${item.shotId}" value="${item.mediaId}" />
+							<input type="hidden" id="shotId_${item.shotId}" value="${item.shotId}" />
+							<div class="float_l" style="width:30%">
+								<video src="${pageContext.request.contextPath}${mediaInfo.localFile}" id="sampleShot_${item.shotId}" width="90%" height="250px" class="float_l ml_10 mr_10"></video>
+								<div>
+									<button id="sampleShot_${item.shotId}Btn" class="float_l mt_10 ml_10 btn_tit_box">Play</button>
+									<div id="slider-range_${item.shotId}" class="float_l mt_10 ml_10" style="width:80%;"></div>
+								</div>
+							</div>
+							<div class="float_l margin" style="width:69%">
+								<div class="cont_tit2">샷 추출 정보 <button id="deleteShot_${item.shotId }" style="font-size:15px;" class="btn_tit_box float_r">삭제</button></div>
+								<table class="tbl_type02">
+									<colgroup>
+										<col style="width:20%">
+										<col>
+										<col style="width:20%">
+										<col>
+									</colgroup>
+									<tbody>
+										<tr>
+											<th>샷 시작시간</th>
+											<td>${item.startTimeInfo}</td>
+											<th>샷 종료시간</th>
+											<td>${item.endTimeInfo}</td>
+										</tr>
+										<tr>
+											<th>샷 시작프레임</th>
+											<td>${item.startFrame}</td>
+											<th>샷 종료프레임</th>
+											<td>${item.endFrame}</td>
+										</tr>
+										<tr>
+											<th>샷 시작섬네일</th>
+											<td>/uploads${item.startThumb}</td>
+											<th>샷 종료섬네일</th>
+											<td>/uploads${item.endThumb}</td>
+										</tr>
+									</tbody>
+								</table>
+								<div class="cont_tit2 mt_10">동영상 샷 이벤트 정보</div>
+								<table class="tbl_type02" style="font-size:12px;">
+									<colgroup>
+										<col style="width:15%">
+										<col>
+									</colgroup>
+									<tbody>
+										<tr>
+											<th>제목</th>
+											<td class="left" style="font-size:12px;"><input type="text" id="evt_title_${item.shotId}" style="width:100%" value="${item.title}" /></td>
+										</tr>
+										<tr>
+											<th>Who</th>
+											<td class="left" style="font-size:12px;">
+												 <input type="hidden" id="evt_who_tagId_${item.shotId}" style="width:25%" value="<c:out value="${item.who}" default="0" />" /> 
+												 Media Tag :  <input type="text" id="evt_who_tag_${item.shotId}" style="width:25%" value="${item.whoTagName}" />
+												 <span class="ml_25">Media Tag Description </span> : <input type="text" id="evt_who_${item.shotId}" style="width:30%"  value="${item.whoDesc}" />
+											</td>
+										</tr>
+										<tr>
+											<th>What Behavior</th>
+											<td class="left" style="font-size:12px;">
+												  <input type="hidden" id="evt_whatBehavior_tagId_${item.shotId}" style="width:25%" value="<c:out value="${item.whatBehavior}" default="0" />" /> 
+												 Media Tag :  <input type="text" id="evt_whatBehavior_tag_${item.shotId}" style="width:25%" value="${item.whatBehaviorTagName}" />
+												 <span class="ml_25">Media Tag Description </span> : <input type="text" id="evt_whatBehavior_${item.shotId}" style="width:30%"  value="${item.whatBehaviorDesc}" />
+											</td>
+										</tr>
+										<tr>
+											<th>What Object</th>
+											<td class="left" style="font-size:12px;">
+												 <input type="hidden" id="evt_whatObject_tagId_${item.shotId}" style="width:25%" value="<c:out value="${item.whatObject}" default="0" />" /> 
+												 Media Tag :  <input type="text" id="evt_whatObject_tag_${item.shotId}" style="width:25%" value="${item.whatObjectTagName}" />
+												 <span class="ml_25">Media Tag Description </span> : <input type="text" id="evt_whatObject_${item.shotId}" style="width:30%"  value="${item.whatObjectDesc}" />
+											</td>
+										</tr>
+										<tr>
+											<th>Where</th>
+											<td class="left" style="font-size:12px;">
+												  <input type="hidden" id="evt_where_tagId_${item.shotId}" style="width:25%" value="<c:out value="${item.where}" default="0" />" /> 
+												 Media Tag :  <input type="text" id="evt_where_tag_${item.shotId}" style="width:25%" value="${item.whereTagName}" />
+												 <span class="ml_25">Media Tag Description </span> : <input type="text" id="evt_where_${item.shotId}" style="width:30%"  value="${item.whereDesc}" />
+											</td>
+										</tr>
+										<tr>
+											<th>When</th>
+											<td class="left" style="font-size:12px;">
+												  <input type="hidden" id="evt_when_tagId_${item.shotId}" style="width:25%" value="<c:out value="${item.when}" default="0" />" />
+												 Media Tag :  <input type="text" id="evt_when_tag_${item.shotId}" style="width:25%" value="${item.whenTagName}" />
+												 <span class="ml_25">Media Tag Description </span> : <input type="text" id="evt_when_${item.shotId}" style="width:30%"  value="${item.whenDesc}" />
+											</td>
+										</tr>
+										<tr>
+											<th>Why</th>
+											<td class="left" style="font-size:12px;">
+												  <input type="hidden" id="evt_why_tagId_${item.shotId}" style="width:25%" value="<c:out value="${item.why}" default="0" />" /> 
+												 Media Tag :  <input type="text" id="evt_why_tag_${item.shotId}" style="width:25%" value="${item.whyTagName}" />
+												 <span class="ml_25">Media Tag Description </span> : <input type="text" id="evt_why_${item.shotId}" style="width:30%"  value="${item.whyDesc}" />
+											</td>
+										</tr>
+										<tr>
+											<th>How</th>
+											<td class="left" style="font-size:12px;">
+												 <input type="hidden" id="evt_how_tagId_${item.shotId}" style="width:25%" value="<c:out value="${item.how}" default="0" />" /> 
+												 Media Tag :  <input type="text" id="evt_how_tag_${item.shotId}" style="width:25%" value="${item.howTagName}" />
+												 <span class="ml_25">Media Tag Description </span> : <input type="text" id="evt_how_${item.shotId}" style="width:30%"  value="${item.howDesc}" />
+											</td>
+										</tr>
+									</tbody>
+								</table>
 							</div>
 						</div>
-						<div class="float_l margin" style="width:69%">
-							<div class="cont_tit2">샷 추출 정보</div>
-							<table class="tbl_type02">
-								<colgroup>
-									<col style="width:20%">
-									<col>
-									<col style="width:20%">
-									<col>
-								</colgroup>
-								<tbody>
-									<tr>
-										<th>샷 시작시간</th>
-										<td>1분 00초</td>
-										<th>샷 종료시간</th>
-										<td>1분 20초</td>
-									</tr>
-									<tr>
-										<th>샷 시작프레임</th>
-										<td>1740</td>
-										<th>샷 종료프레임</th>
-										<td>2320</td>
-									</tr>
-									<tr>
-										<th>샷 시작섬네일</th>
-										<td>/uploads/amusement_park/1/shot1740.png</td>
-										<th>샷 종료섬네일</th>
-										<td>/uploads/amusement_park/1/shot2320.png</td>
-									</tr>
-								</tbody>
-							</table>
-							<div class="cont_tit2 mt_10">동영상 샷 이벤트 정보</div>
-							<table class="tbl_type02" style="font-size:12px;">
-								<colgroup>
-									<col style="width:15%">
-									<col>
-								</colgroup>
-								<tbody>
-									<tr>
-										<th>제목</th>
-										<td class="left" style="font-size:12px;"><input type="text" style="width:100%" value="쌈바홍과 시청자들의 질의 응답" /></td>
-									</tr>
-									<tr>
-										<th>Who</th>
-										<td class="left" style="font-size:12px;"> Media Tag : <input type="text" style="width:25%" value="female" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%"  value="쌈바홍" /></td>
-									</tr>
-									<tr>
-										<th>What Behavior</th>
-										<td class="left" style="font-size:12px;">Media Tag : <input type="text" style="width:25%" value="answer" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%" value="응답" /></td>
-									</tr>
-									<tr>
-										<th>What Object</th>
-										<td class="left" style="font-size:12px;">Media Tag : <input type="text" style="width:25%"value="view_question" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%" value="시청자 질문" /></td>
-									</tr>
-									<tr>
-										<th>Where</th>
-										<td class="left" style="font-size:12px;">Media Tag : <input type="text" style="width:25%" value="home" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%" value="자택" /></td>
-									</tr>
-									<tr>
-										<th>When</th>
-										<td class="left" style="font-size:12px;">Media Tag : <input type="text" style="width:25%" value="night" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%" value="밤" /></td>
-									</tr>
-									<tr>
-										<th>why</th>
-										<td class="left" style="font-size:12px;">Media Tag : <input type="text" style="width:25%" value="question" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%" value="시청자들 질의" /></td>
-									</tr>
-									<tr>
-										<th>How</th>
-										<td class="left" style="font-size:12px;">Media Tag : <input type="text" style="width:25%" value="chatting_voice" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%" value="채팅과 음성" /></td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
 					</div>
-					
-				</div>
-				<div style="height: 465px;border-bottom: 1px solid #afafaf;">
-					<script>
-						$(document).ready(function (){
-							var videoPlayer2 = document.getElementById('sampleShot2');
-							$( "#slider-range2" ).slider({
-								range: true,
-								min: 0,
-								max: 377.951200,
-								values: [ 10, 150],
-								start : function(evt, ui){
-									videoPlayer2.currentTime = ui.values[0]
-								}
-							});
-							
-							
-							videoPlayer2.ontimeupdate = function(){
-								var values =  $( "#slider-range2" ).slider('values');
-								if(videoPlayer2.currentTime >= values[1]){
-									videoPlayer2.pause();
-									videoPlayer2.currentTime = values[1];
-									//
-								} else {	
-									$( "#slider-range2" ).slider('values', 0,videoPlayer2.currentTime)
-								}
-							}
-							$("#sampleShot2Btn").click(function(){
-								if($(this).html() == 'Pause'){
-									$(this).html('Play');
-									videoPlayer2.pause();
-								} else {
-									var values =  $( "#slider-range2" ).slider('values');
-									if(videoPlayer2.currentTime == values[1] || videoPlayer2.currentTime == 0){
-										videoPlayer2.currentTime = 10;
-										$( "#slider-range2" ).slider('values', [10, 150])
-									}
-									videoPlayer2.play();
-									$(this).html('Pause');
-								}
-								
-							});
-						});
-					</script>
-					<div class="cont_tit2 ml_10 mt_10">Shot2 (XX:XX:XX ~ XX:XX:XX)</div>
-					<div class="mt_10">
-						<div class="float_l" style="width:30%">
-							<video src="${pageContext.request.contextPath}/resources/sample/sample1.mp4" id="sampleShot2" width="90%" height="250px" class="float_l ml_10 mr_10"></video>
-							<div>
-								<button id="sampleShot2Btn" class="float_l mt_10 ml_10 btn_tit_box">Play</button>
-								<div id="slider-range2" class="float_l mt_10 ml_10" style="width:80%;"></div>
-							</div>
-						</div>
-						<div class="float_l margin" style="width:69%">
-							<div class="cont_tit2">샷 추출 정보</div>
-							<table class="tbl_type02">
-								<colgroup>
-									<col style="width:20%">
-									<col>
-									<col style="width:20%">
-									<col>
-								</colgroup>
-								<tbody>
-									<tr>
-										<th>샷 시작시간</th>
-										<td>1분 00초</td>
-										<th>샷 종료시간</th>
-										<td>1분 20초</td>
-									</tr>
-									<tr>
-										<th>샷 시작프레임</th>
-										<td>1740</td>
-										<th>샷 종료프레임</th>
-										<td>2320</td>
-									</tr>
-									<tr>
-										<th>샷 시작섬네일</th>
-										<td>/uploads/amusement_park/1/shot1740.png</td>
-										<th>샷 종료섬네일</th>
-										<td>/uploads/amusement_park/1/shot2320.png</td>
-									</tr>
-								</tbody>
-							</table>
-							<div class="cont_tit2 mt_10">동영상 샷 이벤트 정보</div>
-							<table class="tbl_type02" style="font-size:12px;">
-								<colgroup>
-									<col style="width:15%">
-									<col>
-								</colgroup>
-								<tbody>
-									<tr>
-										<th>제목</th>
-										<td class="left" style="font-size:12px;"><input type="text" style="width:100%" value="쌈바홍과 시청자들의 질의 응답" /></td>
-									</tr>
-									<tr>
-										<th>Who</th>
-										<td class="left" style="font-size:12px;"> Media Tag : <input type="text" style="width:25%" value="female" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%"  value="쌈바홍" /></td>
-									</tr>
-									<tr>
-										<th>What Behavior</th>
-										<td class="left" style="font-size:12px;">Media Tag : <input type="text" style="width:25%" value="answer" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%" value="응답" /></td>
-									</tr>
-									<tr>
-										<th>What Object</th>
-										<td class="left" style="font-size:12px;">Media Tag : <input type="text" style="width:25%"value="view_question" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%" value="시청자 질문" /></td>
-									</tr>
-									<tr>
-										<th>Where</th>
-										<td class="left" style="font-size:12px;">Media Tag : <input type="text" style="width:25%" value="home" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%" value="자택" /></td>
-									</tr>
-									<tr>
-										<th>When</th>
-										<td class="left" style="font-size:12px;">Media Tag : <input type="text" style="width:25%" value="night" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%" value="밤" /></td>
-									</tr>
-									<tr>
-										<th>why</th>
-										<td class="left" style="font-size:12px;">Media Tag : <input type="text" style="width:25%" value="question" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%" value="시청자들 질의" /></td>
-									</tr>
-									<tr>
-										<th>How</th>
-										<td class="left" style="font-size:12px;">Media Tag : <input type="text" style="width:25%" value="chatting_voice" /><span class="ml_25">Media Tag Description </span> : <input type="text" style="width:30%" value="채팅과 음성" /></td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-					</div>
-					
-				</div>
+				</c:forEach>
 			</div>
-		</div>
-		<div class="align_r mt_10">
-			<a href="#" class="btn b_gray medium">저장</a>
 		</div>
 	</div>
 	<!--// full area end -->

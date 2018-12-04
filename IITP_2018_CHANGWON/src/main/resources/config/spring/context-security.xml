@@ -29,8 +29,8 @@
         <logout 
              logout-url="/logout"
              logout-success-url="/login/logout.do" />
-        <session-management>
-            <concurrency-control max-sessions="1" expired-url="/login_duplicate"/>
+        <session-management invalid-session-url="/login/loginForm.do">
+            <concurrency-control max-sessions="1"  expired-url="/login_duplicate"/>
         </session-management>
     </http>
     
@@ -39,8 +39,8 @@
     <authentication-manager>
         <authentication-provider>
         	<jdbc-user-service data-source-ref="subDataSource"
-        	users-by-username-query="select USER_ID as username,USER_PWD as password,enabled from USER where USER_ID=?"
-        	authorities-by-username-query="select USER_ID as username,role from USER where USER_ID=?"
+        	users-by-username-query="select USER_ID as username, USER_PWD as password, enabled from USER where USER_ID=?"
+        	authorities-by-username-query="select USER_ID as username, role from USER where USER_ID=?"
         	/>
            </authentication-provider>
     </authentication-manager>   

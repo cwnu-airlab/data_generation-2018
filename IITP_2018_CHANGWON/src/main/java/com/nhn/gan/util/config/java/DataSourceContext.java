@@ -40,7 +40,6 @@ public class DataSourceContext {
 		BasicDataSource ds = new BasicDataSource();
 		ds.setDriverClassName(driverClassName);
 		ds.setUrl(url);
-		System.out.println("URL : " + url);
 		ds.setUsername(username);
 		ds.setPassword(password);
 		ds.setDefaultAutoCommit(false);

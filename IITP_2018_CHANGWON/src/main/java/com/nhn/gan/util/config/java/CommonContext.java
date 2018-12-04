@@ -37,7 +37,6 @@ public class CommonContext {
 	
 	@Bean(name="fileSystemResource")
 	public Resource getFileSystemResource() {
-		System.out.println(uploadPath);
 		FileSystemResource res = new FileSystemResource(uploadPath);
 		return res;
 	}

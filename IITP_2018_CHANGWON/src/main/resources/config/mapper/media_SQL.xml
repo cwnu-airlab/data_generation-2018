@@ -4,38 +4,42 @@
 	<resultMap type="MediaVo" id="mediaMap">
 		<result column="MEDIA_ID" property="mediaId"/>
 		<result column="CATEGORY" property="category"/>
+		<result column="CATEGORY_NAME" property="categoryName"/>
 		<result column="FILE_NAME" property="fileName"/>
-		<result column="THUMBNAIL" property="thumbail"/>
+		<result column="THUMBNAIL" property="thumbNail"/>
 		<result column="LOCAL_FILE" property="localFile"/>
 		<result column="REGISTED_USER" property="registedUser"/>
+		<result column="TOTAL_FRAME" property="totalFrame"/>
+		<result column="DURATION" property="duration"/>
 		<result column="STATUS" property="status"/>
 		<result column="REG_DT" property="regDt"/>
 		<result column="UPD_DT" property="updDt"/>
 	</resultMap>
 	
-	<resultMap type="MediaActivityVo" id="mediaActivityMap">
+	<resultMap type="MediaShotVo" id="mediaShotMap">
+		<result column="SHOT_ID" property="shotId"/>
 		<result column="MEDIA_ID" property="mediaId"/>
+		<result column="START_FRAME" property="startFrame"/>
+		<result column="END_FRAME" property="endFrame"/>
+		<result column="START_THUMB" property="startThumb"/>
+		<result column="END_THUMB" property="endThumb"/>
+		<result column="START_TIME_CODE" property="startTimeCode"/>
+		<result column="END_TIME_CODE" property="endTimeCode"/>
+		<result column="START_TIME" property="startTime"/>
+		<result column="END_TIME" property="endTime"/>
 		<result column="TITLE" property="title"/>
 		<result column="WHO" property="who"/>
-		<result column="WHO_DESC" property="whoDesc"/>
 		<result column="WHAT_BEHAVIOR" property="whatBehavior"/>
-		<result column="WHAT_BEHAVIOR_DESC" property="whatBehaviorDesc"/>
-		<result column="WHAT_BEHAVIOR" property="whatObject"/>
-		<result column="WHAT_OBJECT_DESC" property="whatObjectDesc"/>
+		<result column="WHAT_OBJECT" property="whatObject"/>
 		<result column="WHERE" property="where"/>
-		<result column="WHERE_DESC" property="whereDesc"/>
 		<result column="WHEN" property="when"/>
-		<result column="WHEN_DESC" property="whenDesc"/>
 		<result column="WHY" property="why"/>
-		<result column="WHY_DESC" property="whyDesc"/>
 		<result column="HOW" property="how"/>
-		<result column="HOW_DESC" property="howDesc"/>
-		<result column="REG_DT" property="regDt"/>
-		<result column="UPT_DT" property="uptDt"/>
 	</resultMap>
 	
 	<resultMap type="MediaTagDescVo" id="mediaTagDescMap">
 		<result column="TAG_ID" property="tagId"/>
+		<result column="SHOT_ID" property="shotId"/>
 		<result column="MEDIA_ID" property="mediaId"/>
 		<result column="TAG_NAME" property="tagName"/>
 		<result column="DESCRIPTION" property="description"/>
@@ -46,9 +50,37 @@
 		<result column="CAT_NAME" property="catName"/>
 	</resultMap>
 	
+	<sql id="search_media_condition">
+		<if test="searchTerm != null and !searchTerm.trim().equalsIgnoreCase('')">
+			<choose>
+				<when test="searchTermOpt.trim().equalsIgnoreCase('CATEGORY')">
+					CATEGORY IN (
+						SELECT CAT_ID FROM MEDIA_CATEGORY WHERE CAT_NAME LIKE CONCAT('%', #{searchTerm},'%')										
+					)
+				</when>
+				<when test="searchTermOpt.trim().equalsIgnoreCase('FILE')">
+					FILE_NAME LIKE CONCAT('%', #{searchTerm},'%')	
+				</when>
+				<otherwise>
+					CATEGORY IN (
+						SELECT CAT_ID FROM MEDIA_CATEGORY WHERE CAT_NAME LIKE CONCAT('%', #{searchTerm},'%')										
+					)
+					OR 
+					FILE_NAME LIKE CONCAT('%', #{searchTerm},'%')										
+				</otherwise>
+			</choose>
+		</if>
+	</sql>
+	
 	<select id="getMediaId" resultType="int">
-		SELECT MAX(MEDIA_ID) + 1
+		SELECT IFNULL(MAX(MEDIA_ID),0) + 1
 		FROM MEDIA
+	</select>
+	
+	<select id="getMediaShotId" parameterType="int" resultType="int">
+		SELECT IFNULL(MAX(SHOT_ID),0) + 1
+		FROM MEDIA_SHOT
+		WHERE MEDIA_ID = #{mediaId}
 	</select>
 	
 	<select id="getNoneCategory" resultType="string">
@@ -58,68 +90,100 @@
 	</select>
 	
 	<insert id="insertMedia" parameterType="MediaVo">
-		INSERT INTO MEDIA (CATEGORY, FILE_NAME, THUMBNAIL, LOCAL_FILE, REGISTED_USER, REG_DT) 
-		VALUES (#{category}, #{fileName}, #{thumbnail}, #{localFile}, #{registedUser}, #{regDt})
+		INSERT INTO MEDIA (MEDIA_ID, CATEGORY, FILE_NAME, THUMBNAIL, LOCAL_FILE, DURATION, TOTAL_FRAME,REGISTED_USER, REG_DT) 
+		VALUES (#{mediaId}, #{category}, #{fileName}, #{thumbNail}, #{localFile}, #{duration}, #{totalFrame}, #{registedUser}, #{regDt})
 	</insert>
 	
-	<insert id="insertMediaTagDesc" parameterType="MediaTagDescVo">
-		INSERT INTO MEDIA_TAG_DESC (TAG_NAME, DESCRIPTION, MEDIA_ID) VALUES (${tagName}, ${description}, #{mediaId})
+	<insert id="insertMediaTagDesc" parameterType="MediaTagDescVo" keyColumn="TAG_ID" keyProperty="tagId" useGeneratedKeys="true">
+		INSERT INTO MEDIA_TAG_DESC (TAG_NAME, DESCRIPTION, MEDIA_ID, SHOT_ID) VALUES (#{tagName}, #{description}, #{mediaId},#{shotId})
 	</insert>
 	
-	<insert id="insertMediaCategory" parameterType="MediaCategoryVo">
-		INSERT INTO MEIDA_CATEGORY (CAT_NAME) VALUES (#{catName})
-	</insert>
-	
-	<insert id="insertMeidaActivity" parameterType="MediaActivityVo">
-		INSERT INTO MEDIA_ACTIVITY (MEDIA_ID, TITLE, WHO, WHAT_BEHAVIOR, WHAT_OBJECT, `WHERE`, `WHEN`, WHY, HOW, REG_DT) 
-		VALUES (#{mediaId}, #{title}, ${who}, #{whatBehavior}, #{whatObject}, #{where}, #{when}, #{why}, #{how}, #{regDt})
-	</insert>
-	
-	<update id="updateMeidaActivity" parameterType="MediaActivityVo">
+	<update id="updateMediaActivity" parameterType="MediaShotVo">
 		UPDATE MEDIA_ACTIVITY
 		<set>
-			<if test="title != null &amp;&amp; title.length() &gt; 1">
-				TITLE=${title},
-			</if>
-			<if test="who &gt; 0">
-				WHO=${who},
-			</if>
-			<if test="whatBehavior &gt; 0">
-				WHAT_BEHAVIOR=${whatBehavior},
-			</if>
-			<if test="whatObject &gt; 0">
-				WHAT_OBJECT=${whatObject},
-			</if>
-			<if test="where &gt; 0">
-				`WHERE`=${where},
-			</if>
-			<if test="when &gt; 0">
-				`WHEN`=${when},
-			</if>
-			<if test="why &gt; 0">
-				WHY=${why},
-			</if>
-			<if test="how &gt; 0">
-				HOW=${how},
-			</if>
-			UPT_DT = CURRENT_TIMESTAMP
-		</set> 
-		WHERE MEDIA_ID = #{mediaId}
+			<choose>
+				<when test='editField.equals("TITLE")'>
+					`TITLE` = #{title},
+				</when>
+				<when test='editField.equals("WHO")'>
+					`WHO` = #{who},
+				</when>
+				<when test='editField.equals("WHAT_BEHAVIOR")'>
+					`WHAT_BEHAVIOR` = #{whatBehavior},
+				</when>
+				<when test='editField.equals("WHAT_OBJECT")'>
+					`WHAT_OBJECT` = #{whatObject},
+				</when>
+				<when test='editField.equals("WHERE")'>
+					`WHERE` = #{where},
+				</when>
+				<when test='editField.equals("WHEN")'>
+					`WHEN` = #{when},
+				</when>
+				<when test='editField.equals("WHY")'>
+					`WHY` = #{why},
+				</when>
+				<when test='editField.equals("HOW")'>
+					`HOW` = #{how},
+				</when>
+			</choose>
+			REG_DT = current_timestamp()
+		</set>
+		WHERE 
+			MEDIA_ID = #{mediaId}
+			AND SHOT_ID = #{shotId}
 	</update>
 	
-	<select id="selectMediaActivity" parameterType="int" resultMap="mediaActivityMap">
-		SELECT 
-		MEDIA_ID, TITLE, WHO, WHAT_BEHAVIOR, WHAT_OBJECT, `WHERE`, `WHEN`, WHY, HOW
-		FROM MEDIA_ACTIVITY
+	<update id="updateMediaTagDesc" parameterType="MediaTagDescVo">
+		UPDATE MEDIA_TAG_DESC  
+		SET 
+			TAG_NAME = #{tagName},
+			DESCRIPTION = #{description}
+		WHERE 
+			TAG_ID=#{tagId} 
+			AND SHOT_ID=#{shotId} 
+			AND MEDIA_ID = #{mediaId}
+	</update>
+	
+	<insert id="insertMediaShot" parameterType="MediaShotVo">
+		INSERT INTO MEDIA_SHOT (SHOT_ID, MEDIA_ID, START_FRAME, END_FRAME, START_TIME, END_TIME, START_TIME_CODE, END_TIME_CODE, START_THUMB, END_THUMB) 
+		VALUES (#{shotId}, #{mediaId}, #{startFrame}, #{endFrame}, #{startTime}, #{endTime}, #{startTimeCode}, #{endTimeCode}, #{startThumb}, #{endThumb})
+	</insert>
+	
+	<insert id="insertMediaActivity" parameterType="MediaShotVo">
+		INSERT INTO MEDIA_ACTIVITY (SHOT_ID, MEDIA_ID)
+		VALUES (#{shotId}, #{mediaId})
+	</insert>
+	
+	<insert id="insertMediaCategory" parameterType="MediaCategoryVo" keyColumn="CAT_ID" keyProperty="catId" useGeneratedKeys="true">
+		INSERT INTO MEDIA_CATEGORY (CAT_NAME) VALUES (#{catName})
+	</insert>
+	
+	<delete id="deleteMedia" parameterType="int">
+		DELETE FROM MEDIA WHERE MEDIA_ID = #{mediaId}
+	</delete>
+	
+	<delete id="deleteMediaShot" parameterType="MediaShotVo">
+		DELETE FROM MEDIA_SHOT WHERE MEDIA_ID = ${mediaId} AND SHOT_ID = #{shotId}
+	</delete>
+	
+	<update id="updateMediaShotThumb" parameterType="MediaShotVo">
+		UPDATE MEDIA_SHOT
+		<set>
+			START_THUMB = #{startThumb},
+			END_THUMB = #{endThumb}
+		</set>
+		WHERE MEDIA_ID = #{mediaId} AND SHOT_ID=#{shotId}
+	</update>
+	<update id="updateMediaCategory" parameterType="MediaVo">
+		UPDATE MEDIA 
+		<set>
+			CATEGORY = #{category},
+			LOCAL_FILE = #{localFile},
+			THUMBNAIL = #{thumbNail}
+		</set>
 		WHERE MEDIA_ID = #{mediaId}
-	</select>
-	
-	<select id="selectMediaTagDesc" parameterType="MediaTagDescVo" resultMap="mediaTagDescMap">
-		SELECT *
-		FROM MEDIA_TAG_DESC
-		WHERE MEDIA_ID = #{mediaId} AND TAG_ID = #{tagId}
-	</select>
-	
+	</update>
 	
 	<select id="selectCategoryList" resultMap="mediaCategoryMap">
 		SELECT CAT_ID, CAT_NAME
@@ -130,10 +194,19 @@
 		SELECT COUNT(*) AS CNT
 		FROM MEDIA
 		<!-- WHERE --> 
+		<where>
+			<include refid="search_media_condition" />
+		</where>
 	</select>
 	
 	<select id="selectMediaInfoList" parameterType="MediaVO" resultMap="mediaMap">
-		SELECT A.MEDIA_ID, A.CATEGORY, (SELECT B.CAT_NAME FROM MEDIA_CATEGORY B WHERE B.CAT_ID = A.CATEGORY) AS CATEGORY_NAME, A.FILE_NAME, A.REGISTED_USER, IFNULL(A.UPD_DT, A.REG_DT) AS A.REG_DT
+		SELECT 
+			A.MEDIA_ID, 
+			A.CATEGORY, 
+			(SELECT B.CAT_NAME FROM MEDIA_CATEGORY B WHERE B.CAT_ID = A.CATEGORY) AS CATEGORY_NAME, 
+			A.FILE_NAME, 
+			A.REGISTED_USER, 
+			IFNULL(A.UPT_DT, A.REG_DT) AS REG_DT
 		FROM MEDIA A
 		INNER JOIN ( 
 			SELECT A.RNUM, A.MEDIA_ID
@@ -145,21 +218,62 @@
 						SELECT MEDIA_ID
 						FROM MEDIA
 						<!-- WHERE --> 
-					), 
+						<where>
+							<include refid="search_media_condition" />
+						</where>
+						ORDER BY REG_DT DESC
+					) A, 
 					(SELECT @ROWNUM := 0) B
-				)
+				) A
 				<![CDATA[
-					WHERE RNUM > 0
+					WHERE RNUM > #{startIndex}
 				]]>
 			) A
 			<![CDATA[
-				WHERE RNUM <= 10
+				WHERE RNUM <= #{endIndex}
 			]]>
 		) B
 		ON A.MEDIA_ID = B.MEDIA_ID
-		ORDER REG_DT DESC
+		ORDER BY REG_DT DESC
 	</select>	
 	
+	<select id="selectMediaInfo" parameterType="int" resultMap="mediaMap">
+		SELECT 
+			MEDIA_ID, CATEGORY, 
+			A.FILE_NAME, A.LOCAL_FILE, A.THUMBNAIL,
+			A.REGISTED_USER, A.TOTAL_FRAME, A.DURATION,
+			 IFNULL(A.UPT_DT, A.REG_DT) AS REG_DT, 
+			 (SELECT B.CAT_NAME FROM MEDIA_CATEGORY B WHERE B.CAT_ID = A.CATEGORY) AS CATEGORY_NAME
+		FROM MEDIA A
+		WHERE A.MEDIA_ID = #{mediaId}
+	</select>
 	
+	
+	<select id="selectMediaActivity" parameterType="int" resultMap="mediaShotMap">
+		SELECT A.SHOT_ID, A.MEDIA_ID, A.START_FRAME, A.END_FRAME, A.START_THUMB, 
+			A.END_THUMB, A.START_TIME_CODE, A.END_TIME_CODE, A.START_TIME, A.END_TIME,
+			B.TITLE, B.WHO, B.WHAT_BEHAVIOR, B.WHAT_OBJECT, 
+			B.`WHERE`, B.`WHEN`, B.WHY, B.HOW
+		FROM MEDIA_SHOT A
+		LEFT OUTER JOIN MEDIA_ACTIVITY B
+		ON A.MEDIA_ID = B.MEDIA_ID AND A.SHOT_ID = B.SHOT_ID
+		WHERE A.MEDIA_ID = #{mediaId}
+	</select>
+	
+	<select id="selectMediaTagDesc" parameterType="int" resultMap="mediaTagDescMap">
+		SELECT DISTINCT MEDIA_ID, SHOT_ID, TAG_ID, TAG_NAME, DESCRIPTION
+		FROM MEDIA_TAG_DESC
+		WHERE MEDIA_ID = #{mediaId}
+	</select>
+	
+	<select id="selectCategoryInfo" parameterType="int" resultMap="mediaCategoryMap">
+		SELECT CAT_ID, CAT_NAME
+		FROM MEDIA_CATEGORY
+		<where>
+			<if test="catId gt 0">
+				CAT_ID = #{catId}
+			</if>
+		</where>
+	</select>
 	
 </mapper>

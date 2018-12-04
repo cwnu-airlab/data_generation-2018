@@ -2,7 +2,7 @@
 var webFontURLs;
 var dispatcher;
 var bratWin = [];
-var bratWinLength;
+var bratWinLength = 0;
 var keywordLoc;
 var keywordnum;
 
@@ -320,13 +320,13 @@ function fn_bratView(type, docId, recordId){
 			var collData = {};	
 			collData.entity_types = data.collData.entities;
 			collData.relation_types = data.collData.relations;
-			dispatcher.post('collectionLoaded', [collData]);
 			
 			var docData = {};
 			docData.text = data.docData.text;
 			
 			docData.entities = data.docData.entities;
 			docData.relations = data.docData.relations;
+			dispatcher.post('collectionLoaded', [collData]);
 			dispatcher.post('requestRenderData', [docData]); 
 			
 			setTimeout("$('#brat-loading').hide()" , 500);

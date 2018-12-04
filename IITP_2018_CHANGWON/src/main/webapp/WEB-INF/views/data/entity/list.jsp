@@ -34,7 +34,7 @@
 					<input type="hidden" id="uploadOpt"/>
 						
 					레이블링 객체 / 관계 목록 
-					<a href="#" class="btn_icon_download_black float_r ml_5"  title="양식 다운로드"></a>
+					<a href="#" onclick="fn_sampleDownload(); return false;" class="btn_icon_download_black float_r ml_5"  title="양식 다운로드"></a>
 					<a href="#" onclick="fn_delete(); return false;" title="선택한 객체 제거" class="btn_icon_delete float_r ml_5"></a>				
 					<a href="#" onclick="fn_editEntity(); return false;" title="선택한 객체 편집" class="btn_icon_edit float_r ml_5"></a>
 				</div>

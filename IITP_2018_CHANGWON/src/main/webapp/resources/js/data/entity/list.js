@@ -23,7 +23,7 @@ $(function () {
 		data.append("file",$(this)[0].files[0]);
 		data.append("groupName", groupName);
 		
-		if (!confirm("문서를 등록하시겠습니까?")) {
+		if (!confirm("레이블링 정보를 등록하시겠습니까?")) {
 		    return false;
 		}
 		$.ajax({

@@ -46,12 +46,15 @@ $(function(){
 		var modal_id = modal_name;
 		$('#'+modal_id).fadeIn('fast');
 
-		modal_position(modal_id);
-
 		$(window).resize(function() {
 			modal_position(modal_id);
 		});
 	};
+	
+	close_modal_porgress = function(modal_name){
+		$('#'+modal_name).fadeOut('fast');
+		return false;
+	}
 
 	model_close = function () {
 		('.btn_modal_close, .pop_btnset_foot .type_cancel').click();

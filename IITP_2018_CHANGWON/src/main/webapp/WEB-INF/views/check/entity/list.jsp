@@ -98,7 +98,9 @@
 			<div class="label_01" style="width:22% !important;">
 				<div class="cont_tit2">키워드 <span id="selectTag"></span> (총 <span id="keywordListCount">0</span>건)</div>
 				<div class="cont_gray type_01 clear2">
-
+					<div id="keyword-loading" style="opacity:0.5;width:100%;height:100%;top:0;left:0;position:static;display:none;z-index: 99;">
+						<img src="${pageContext.request.contextPath}/resources/images/common/loading.gif" style="position:absolute;top:45%;left:45%;z-index:100;width:80px;"/>
+					</div>
 					<!-- 목록 start -->
 					<table class="tbl_type01">
 						<colgroup>

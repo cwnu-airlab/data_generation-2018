@@ -2,6 +2,8 @@ package com.nhn.gan.domain;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MediaVo extends CommonVo implements Serializable {
 	/**
@@ -21,6 +23,10 @@ public class MediaVo extends CommonVo implements Serializable {
 	private int totalFrame;
 	private Timestamp regDt;
 	private Timestamp uptDt;
+	
+	private int[] selectMediaId;
+
+	private List<MediaShotVo> shotInfo = new ArrayList<MediaShotVo>();
 
 	public int getMediaId() {
 		return mediaId;
@@ -124,6 +130,32 @@ public class MediaVo extends CommonVo implements Serializable {
 
 	public void setTotalFrame(int totalFrame) {
 		this.totalFrame = totalFrame;
+	}
+
+	@Override
+	public void setEndIndex(int pageNo) {
+		this.endIndex = pageNo * 20;
+	}
+
+	@Override
+	public void setStartIndex(int pageNo) {
+		this.startIndex = (pageNo - 1) * 20;
+	}
+
+	public List<MediaShotVo> getShotInfo() {
+		return shotInfo;
+	}
+
+	public void setShotInfo(List<MediaShotVo> shotInfo) {
+		this.shotInfo = shotInfo;
+	}
+
+	public int[] getSelectMediaId() {
+		return selectMediaId;
+	}
+
+	public void setSelectMediaId(int[] selectMediaId) {
+		this.selectMediaId = selectMediaId;
 	}
 
 }
