@@ -76,7 +76,7 @@ public class MediaServaiceImpl implements MediaService {
 
 		String catName = mediaDao.getNoneCategory();
 		String uploadDirPath = mediaUploadPath + "/uploads/" + catName;
-		String dbInsertPath = mediaDbInsertPath + "/uploads/" + catName;
+		String dbInsertPath = mediaDbInsertPath +"/"+ catName;
 		File dirP = new File(uploadDirPath);
 		if (!dirP.exists()) {
 			dirP.mkdirs();
@@ -443,8 +443,10 @@ public class MediaServaiceImpl implements MediaService {
 	@Override
 	public int deleteMediaShot(MediaShotVo vo) throws Exception {
 		// TODO Auto-generated method stub
-		String startThumb = vo.getStartThumb();
-		String endThumb = vo.getEndThumb();
+		MediaShotVo res = mediaDao.selectMediaShotInfo(vo);
+		
+		String startThumb = res.getStartThumb();
+		String endThumb = res.getEndThumb();
 
 		File sf = new File(mediaUploadPath, startThumb);
 		if (sf.exists()) {

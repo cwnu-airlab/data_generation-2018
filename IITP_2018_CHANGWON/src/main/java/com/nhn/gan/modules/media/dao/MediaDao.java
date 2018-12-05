@@ -45,6 +45,10 @@ public class MediaDao extends CommonDAO {
 		return getSqlSession().selectOne("media.selectMediaInfo", mediaId);
 	}
 	
+	public MediaShotVo selectMediaShotInfo(MediaShotVo vo) {
+		return getSqlSession().selectOne("media.selectMediaShotInfo", vo);
+	}
+	
 	public List<MediaShotVo> selectShotMediaActivity(int mediaId) {
 		return getSqlSession().selectList("media.selectMediaActivity", mediaId);
 	}

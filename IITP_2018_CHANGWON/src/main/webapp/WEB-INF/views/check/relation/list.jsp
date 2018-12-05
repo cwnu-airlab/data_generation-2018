@@ -14,9 +14,20 @@
 <script type="text/javascript" src="${pageContext.request.contextPath}/resources/js/brat/client/src/visualizer.js"></script>
 
 <script type="text/javascript" src="${pageContext.request.contextPath}/resources/js/check/relation/list.js"></script>
-<script>
+<script type="text/javascript">
 $.views.converters("dotrepl", function(val) {
+	val = val.replace(/\./gi, '__');
+	val = val.replace(/([\s]{1,})/gi, '_')
+	val = val.replace(/(\+|\/)/gi, '__');
+	val = val.replace(/\)|\(/gi,"--")
+	val = val.replace(/(\\|\'|\"|\{|\})/gi, '_');
     return val.replace(/\./gi, '__')
+});
+
+$.views.converters("queteRepl", function(val) {
+	val = encodeURIComponent(val);
+	val = val.replace(/\'/gi, "\\'")
+    return val;
 });
 </script>
 <!-- 모달 : 레이블 분류 start -->
@@ -253,7 +264,7 @@ $.views.converters("dotrepl", function(val) {
 <script id="tmpl_keyword1" type="text/x-jsrender">
 {{if #data}}
 	{{for keywordList}}
-	<tr id="keyword_{{dotrepl:content}}" onclick="javascript:setKeyword1('{{>typeOpt}}','{{>content}}')">
+	<tr id="keyword_{{dotrepl:content}}" onclick="javascript:setKeyword1('{{>typeOpt}}','{{queteRepl:content}}')">
 			{{if content.length > 15}}
 				<td class="left" title="{{>content}}">{{>content.substring(0, 15)}}...</td>
 			{{else}}
@@ -267,7 +278,7 @@ $.views.converters("dotrepl", function(val) {
 <script id="tmpl_keyword2" type="text/x-jsrender">
 {{if #data}}
 	{{for keywordList}}
-	<tr id="keyword_{{dotrepl:content}}" onclick="javascript:setKeyword2('{{>typeOpt}}','{{>content}}')">
+	<tr id="keyword_{{dotrepl:content}}" onclick="javascript:setKeyword2('{{>typeOpt}}','{{queteRepl:content}}')">
 			{{if content.length > 15}}
 				<td class="left" title="{{>content}}">{{>content.substring(0, 15)}}...</td>
 			{{else}}

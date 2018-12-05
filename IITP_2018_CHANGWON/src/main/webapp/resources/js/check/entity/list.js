@@ -219,11 +219,11 @@ function fn_keywordSort(field){
 			    $("#keywordList").html(html);
 			    $("#keywordListCount").text(data.keywordListCount);
 			    if(searchTerm != ''){
-		    		$('#keyword_'+searchTerm).addClass('on');
+		    		$('#keyword_'+replaceIdText(searchTerm)).addClass('on');
 			    } else {
 			    	searchTerm = $("#searchTermInfo").val()
 			    	if(searchTerm != ''){
-			    		$('#keyword_'+searchTerm).addClass('on');
+			    		$('#keyword_'+replaceIdText(searchTerm)).addClass('on');
 			    	}
 			    }
 			},
@@ -294,7 +294,7 @@ function fn_getKeyword() {
 			    $("#keywordList").html(html);
 			    $("#keywordListCount").text(data.keywordListCount);
 			    if(searchTerm != ''){
-			    	$('#keyword_'+searchTerm).addClass('on');
+			    	$('#keyword_'+replaceIdText(searchTerm)).addClass('on');
 			    }
 			},
 			complete : function (){
@@ -343,7 +343,7 @@ function fn_LabelingDoc(content) {
 		url: url,
 		beforeSend : function(){
 			  $('tr[id^=keyword_]').removeClass('on');
-			  $('#keyword_'+content).addClass('on');
+			  $('#keyword_'+replaceIdText(content)).addClass('on');
 			  $('#searchTermInfo').val(content);
 		},
 		success: function (data) {

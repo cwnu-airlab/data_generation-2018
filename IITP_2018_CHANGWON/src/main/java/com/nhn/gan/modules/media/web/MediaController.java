@@ -165,14 +165,14 @@ public class MediaController {
 	}
 
 	@RequestMapping(value = "/media/editActivity.do", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ModelAndView editActivity(int mediaId, int shotId, String editField, int tagId, String tagName, String value,
+	public ModelAndView editActivity(int mediaId, int shotId, String editField, int tagId, String tagName, String tagValue,
 			ModelAndView model) throws Exception {
 		MediaShotVo vo = new MediaShotVo();
 		vo.setMediaId(mediaId);
 		vo.setShotId(shotId);
 		vo.setEditField(editField);
 		if ("TITLE".equals(editField.trim())) {
-			vo.setTitle(value);
+			vo.setTitle(tagValue);
 			mediaService.updateActivity(vo);
 		} else {
 			MediaTagDescVo tagVo = new MediaTagDescVo();
@@ -185,8 +185,9 @@ public class MediaController {
 				tagVo.setTagId(tagId);
 			}
 			tagVo.setTagName(tagName);
-			tagVo.setDescription(value);
+			tagVo.setDescription(tagValue);
 			mediaService.editMediaTag(tagVo);
+			model.addObject("tagInfo", tagVo);
 			if (insertTag) {
 				if ("WHO".equals(editField.trim())) {
 					vo.setWho(tagVo.getTagId());

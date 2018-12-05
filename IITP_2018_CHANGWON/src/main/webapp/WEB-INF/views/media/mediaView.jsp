@@ -135,9 +135,9 @@
 											</tr>
 											<tr>
 												<th>샷 시작섬네일</th>
-												<td>/uploads${item.startThumb}</td>
+												<td>${item.startThumb}</td>
 												<th>샷 종료섬네일</th>
-												<td>/uploads${item.endThumb}</td>
+												<td>${item.endThumb}</td>
 											</tr>
 										</tbody>
 									</table>

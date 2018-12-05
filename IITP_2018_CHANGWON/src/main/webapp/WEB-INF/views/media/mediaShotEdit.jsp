@@ -95,11 +95,43 @@
 							value = $('#evt_how_'+ shotId).val();
 						}
 						
+						if(editField != 'TITLE'){
+							message = '샷의 '+editField+" 항목에 "
+							
+							if($.trim(tagName) == ''){
+								return;
+							}
+							
+							if($.trim(value) == ''){
+								return													
+							}
+							
+						} else {
+							if(value == ''){
+								return;
+							}
+						}
+						
 						$.ajax({
 							url : contextPath + '/media/editActivity.do',
 							type : 'post',
-							data : {"editField" : editField, "tagId" : tagId, "tagName" : tagName, "tagValue" : value},
+							data : {"mediaId" : mediaId, "shotId" : shotId, "editField" : editField, "tagId" : tagId, "tagName" : tagName, "tagValue" : value},
 							success : function(data) {
+								if(id.indexOf('evt_who') == 0){
+									$('#evt_who_tagId_'+ shotId).val(data.tagInfo.tagId);
+								} else if(id.indexOf('evt_whatBehavior') == 0){
+									$('#evt_whatBehavior_tagId_'+ shotId).val(data.tagInfo.tagId);
+								} else if(id.indexOf('evt_whatObject') == 0){
+									$('#evt_whatObject_tagId_'+ shotId).val(data.tagInfo.tagId);
+								} else if(id.indexOf('evt_where') == 0){
+									$('#evt_where_tagId_'+ shotId).val(data.tagInfo.tagId);
+								} else if(id.indexOf('evt_when') == 0){
+									$('#evt_when_tagId_'+ shotId).val(data.tagInfo.tagId);
+								} else if(id.indexOf('evt_why') == 0){
+									$('#evt_why_tagId_'+ shotId).val(data.tagInfo.tagId);
+								} else if(id.indexOf('evt_how') == 0){
+									$('#evt_how_tagId_'+ shotId).val(data.tagInfo.tagId);
+								}
 								console.log(data);
 							}
 						})
@@ -118,7 +150,7 @@
 				})
 			});
 	</script>
-	<div class="cont_tit2 ml_10 mt_10">Shot1 (${shotInfo.startTimeCode} ~ ${shotInfo.endTimeCode})</div>
+	<div class="cont_tit2 ml_10 mt_10">Shot1 (${shotInfo.startTimeCode} ~ ${shotInfo.endTimeCode})  <a href="#" id="deleteShot_${shotInfo.shotId }" style="font-size:12px;" class="btn_tit_box float_r">삭제</a></div>
 	<div class="mt_10">
 		<input type="hidden" id="mediaId_${shotInfo.shotId}" value="${shotInfo.mediaId}" />
 		<input type="hidden" id="shotId_${shotInfo.shotId}" value="${shotInfo.shotId}" />
@@ -130,7 +162,7 @@
 			</div>
 		</div>
 		<div class="float_l margin" style="width:69%">
-			<div class="cont_tit2">샷 추출 정보 <button id="deleteShot_${shotInfo.shotId }" style="font-size:15px;" class="btn_tit_box float_r">삭제</button></div>
+			<div class="cont_tit2">샷 추출 정보</div>
 			<table class="tbl_type02">
 				<colgroup>
 					<col style="width:20%">
@@ -153,9 +185,9 @@
 					</tr>
 					<tr>
 						<th>샷 시작섬네일</th>
-						<td>/uploads${shotInfo.startThumb}</td>
+						<td>${shotInfo.startThumb}</td>
 						<th>샷 종료섬네일</th>
-						<td>/uploads${shotInfo.endThumb}</td>
+						<td>${shotInfo.endThumb}</td>
 					</tr>
 				</tbody>
 			</table>

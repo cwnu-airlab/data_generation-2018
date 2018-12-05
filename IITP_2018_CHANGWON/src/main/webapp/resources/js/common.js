@@ -107,6 +107,17 @@ $(function(){
 
 });	
 
+function replaceIdText(val) {
+	val = val.replace(/\./gi, '__');
+	val = val.replace(/([\s]{1,})/gi, '_')
+	val = val.replace(/(\+|\/)/gi, '__');
+	val = val.replace(/\)|\(/gi,"--")
+	val = val.replace(/\{|\}/gi,"---")
+	
+	val = val.replace(/(\\|\'|\")/gi, '_');
+    return val.replace(/\./gi, '__')
+}
+
 function openPopup(){
     var win = window.open('', 'win', 'width=1, height=1, scrollbars=yes, resizable=yes');
     console.log(win);

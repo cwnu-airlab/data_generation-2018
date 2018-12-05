@@ -447,7 +447,7 @@ function setKeyword1(type, content) {
 		$("#keyword1").val(content);
 		
 		$('#keywordList1 > tr').removeClass('on');
-		$('#keywordList1 > #keyword_'+content.replace(/\./gi,'__')).addClass('on');
+		$('#keywordList1 > #keyword_'+replaceIdText(content)).addClass('on');
 	} else if (type == 'end') {
 		$("#keyword2").val(content);
 	}
@@ -461,7 +461,7 @@ function setKeyword2(type, content) {
 	} else if (type == 'end') {
 		$("#keyword2").val(content);
 		$('#keywordList2 > tr').removeClass('on');
-		$('#keywordList2 > #keyword_'+content.replace(/\./gi,'__')).addClass('on');
+		$('#keywordList2 > #keyword_'+replaceIdText(content)).addClass('on');
 	}
 	fn_LabelingDoc();	
 }

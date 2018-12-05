@@ -187,12 +187,10 @@
 						<div id="slider-range"></div>
 						<div class="mt_20">
 							<div class="float_l">
-								<input type="text" id="startTime" style="font-size:15px;padding:3px;" value=""/>
-								<button id="startTimeBtn" style="font-size:15px;" class="btn_tit_box">구간 시작 설정</button>
+								구간 시작 시간 : <input type="text" id="startTime" readonly="readonly" style="font-size:15px;padding:3px;" value=""/>
 							</div>
 							<div class="float_r">
-								<input type="text" id="endTime" style="font-size:15px;padding:3px;" value=""/>
-								<button id="endTimeBtn" style="font-size:15px;" class="btn_tit_box">구간 시작 종료</button>
+								구간 종료 시간 : <input type="text" id="endTime" readonly="readonly" style="font-size:15px;padding:3px;" value=""/>
 							</div>
 						</div>
 						<div style="margin-top:150px;">
@@ -205,7 +203,7 @@
 		
 		<div>
 			<div class="cont_tit2">샷 편집 정보</div>
-			<div id="shotEditForm" class="cont_white clear2" style="height:465px;overflow-y:auto;">
+			<div id="shotEditForm" class="cont_white clear2" style="height:486px;overflow-y:auto;">
 				<c:forEach items="${mediaInfo.shotInfo}" var="item" varStatus="itemIndex">
 					<div id="shotEditDiv_${item.shotId}" style="height: 475px;border-bottom: 1px solid #afafaf;">
 						<script>
@@ -321,8 +319,23 @@
 										$.ajax({
 											url : contextPath + '/media/editActivity.do',
 											type : 'post',
-											data : {"mediaId" : mediaId, "shotId" : shotId, "editField" : editField, "tagId" : tagId, "tagName" : tagName, "value" : value},
+											data : {"mediaId" : mediaId, "shotId" : shotId, "editField" : editField, "tagId" : tagId, "tagName" : tagName, "tagValue" : value},
 											success : function(data) {
+												if(id.indexOf('evt_who') == 0){
+													$('#evt_who_tagId_'+ shotId).val(data.tagInfo.tagId);
+												} else if(id.indexOf('evt_whatBehavior') == 0){
+													$('#evt_whatBehavior_tagId_'+ shotId).val(data.tagInfo.tagId);
+												} else if(id.indexOf('evt_whatObject') == 0){
+													$('#evt_whatObject_tagId_'+ shotId).val(data.tagInfo.tagId);
+												} else if(id.indexOf('evt_where') == 0){
+													$('#evt_where_tagId_'+ shotId).val(data.tagInfo.tagId);
+												} else if(id.indexOf('evt_when') == 0){
+													$('#evt_when_tagId_'+ shotId).val(data.tagInfo.tagId);
+												} else if(id.indexOf('evt_why') == 0){
+													$('#evt_why_tagId_'+ shotId).val(data.tagInfo.tagId);
+												} else if(id.indexOf('evt_how') == 0){
+													$('#evt_how_tagId_'+ shotId).val(data.tagInfo.tagId);
+												}
 												console.log(data);
 											}
 										});
@@ -344,7 +357,7 @@
 								});
 							});
 						</script>
-						<div class="cont_tit2 ml_10 mt_10">Shot1 (${item.startTimeCode} ~ ${item.endTimeCode})</div>
+						<div class="cont_tit2 ml_10 mt_10">Shot1 (${item.startTimeCode} ~ ${item.endTimeCode}) <a href="#" id="deleteShot_${item.shotId }" style="font-size:12px;" class="btn_tit_box float_r">삭제</a></div>
 						<div class="mt_10">
 							<input type="hidden" id="mediaId_${item.shotId}" value="${item.mediaId}" />
 							<input type="hidden" id="shotId_${item.shotId}" value="${item.shotId}" />
@@ -356,7 +369,7 @@
 								</div>
 							</div>
 							<div class="float_l margin" style="width:69%">
-								<div class="cont_tit2">샷 추출 정보 <button id="deleteShot_${item.shotId }" style="font-size:15px;" class="btn_tit_box float_r">삭제</button></div>
+								<div class="cont_tit2">샷 추출 정보</div>
 								<table class="tbl_type02">
 									<colgroup>
 										<col style="width:20%">
@@ -379,9 +392,9 @@
 										</tr>
 										<tr>
 											<th>샷 시작섬네일</th>
-											<td>/uploads${item.startThumb}</td>
+											<td>${item.startThumb}</td>
 											<th>샷 종료섬네일</th>
-											<td>/uploads${item.endThumb}</td>
+											<td>${item.endThumb}</td>
 										</tr>
 									</tbody>
 								</table>

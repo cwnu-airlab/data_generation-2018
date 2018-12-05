@@ -14,7 +14,22 @@
 <script type="text/javascript" src="${pageContext.request.contextPath}/resources/js/brat/client/src/visualizer.js"></script>
 
 <script type="text/javascript" src="${pageContext.request.contextPath}/resources/js/check/entity/list.js"></script>
+<script type="text/javascript">
+$.views.converters("dotrepl", function(val) {
+	val = val.replace(/\./gi, '__');
+	val = val.replace(/([\s]{1,})/gi, '_')
+	val = val.replace(/(\+|\/)/gi, '__');
+	val = val.replace(/\)|\(/gi,"--")
+	val = val.replace(/(\\|\'|\"|\{|\})/gi, '_');
+    return val.replace(/\./gi, '__')
+});
 
+$.views.converters("queteRepl", function(val) {
+// 	val = encodeURIComponent(val);
+	val = val.replace(/\'/gi, "\\'")
+    return val;
+});
+</script>
 <!-- 모달 : 레이블 분류 start -->
 <div class="modal" id="modal_type01">
 	<div class="modal_in" style="width:400px;">
@@ -281,7 +296,7 @@
 <script id="tmpl_keyword" type="text/x-jsrender">
 {{if #data}}
 	{{for keywordList}}
-		<tr id="keyword_{{>content}}" onclick="javascript:fn_LabelingDoc('{{>content}}')">
+		<tr id="keyword_{{dotrepl:content}}" onclick="javascript:fn_LabelingDoc('{{queteRepl:content}}')">
 			{{if content.length > 6}}
 				<td class="left" title="{{>content}}">{{>content.substring(0, 6)}}...</td>
 			{{else}}

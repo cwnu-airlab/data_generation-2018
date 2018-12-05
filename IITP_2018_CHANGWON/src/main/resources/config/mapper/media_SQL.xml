@@ -249,6 +249,17 @@
 	</select>
 	
 	
+	<select id="selectMediaShotInfo" parameterType="MediaShotVo" resultMap="mediaShotMap" >
+		SELECT A.SHOT_ID, A.MEDIA_ID, A.START_FRAME, A.END_FRAME, A.START_THUMB, 
+			A.END_THUMB, A.START_TIME_CODE, A.END_TIME_CODE, A.START_TIME, A.END_TIME,
+			B.TITLE, B.WHO, B.WHAT_BEHAVIOR, B.WHAT_OBJECT, 
+			B.`WHERE`, B.`WHEN`, B.WHY, B.HOW
+		FROM MEDIA_SHOT A
+		LEFT OUTER JOIN MEDIA_ACTIVITY B
+		ON A.MEDIA_ID = B.MEDIA_ID AND A.SHOT_ID = B.SHOT_ID
+		WHERE A.MEDIA_ID = #{mediaId} AND A.SHOT_ID = #{shotId}
+	</select>
+	
 	<select id="selectMediaActivity" parameterType="int" resultMap="mediaShotMap">
 		SELECT A.SHOT_ID, A.MEDIA_ID, A.START_FRAME, A.END_FRAME, A.START_THUMB, 
 			A.END_THUMB, A.START_TIME_CODE, A.END_TIME_CODE, A.START_TIME, A.END_TIME,

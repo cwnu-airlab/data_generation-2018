@@ -236,7 +236,7 @@ public class MediaShotVo extends CommonVo implements Serializable {
 
 	public void setWhenTagInfo(MediaTagDescVo desc) {
 		this.whenTagName = desc.getTagName();
-		this.whenTagName = desc.getDescription();
+		this.whenDesc = desc.getDescription();
 	}
 
 	public String getWhenDesc() {
